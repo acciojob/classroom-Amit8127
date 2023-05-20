@@ -27,8 +27,12 @@ public class StudentRepository {
     }
 
     public void addStudentTeacherPair(String student, String teacher) {
-        List<String> students = studentTeacherPairs.computeIfAbsent(teacher, key -> new ArrayList<>());
-        students.add(student);
+        List<String> studentlist = new ArrayList<>();
+        if (studentTeacherPairs.containsKey(teacher))
+            studentlist = studentTeacherPairs.get(teacher);
+        if (!studentlist.contains(student))
+            studentlist.add(student);
+        studentTeacherPairs.put(teacher, studentlist);
     }
 
     public Teacher getTeacherByName(String name) {
@@ -36,14 +40,32 @@ public class StudentRepository {
     }
 
     public List<String> getStudentsByTeacherName(String teacher) {
-        return studentTeacherPairs.getOrDefault(teacher, new ArrayList<>());
+        List<String> studentlist = new ArrayList<>();
+        if (studentTeacherPairs.containsKey(teacher))
+            studentlist = studentTeacherPairs.get(teacher);
+        return studentlist;
     }
 
     public void deleteTeacherByName(String teacher) {
+        List<String> pairlist = new ArrayList<>();
+        if (studentTeacherPairs.containsKey(teacher)) {
+            pairlist = studentTeacherPairs.get(teacher);
+            for (String st : pairlist) {
+                students.remove(st);
+            }
+            studentTeacherPairs.remove(teacher);
+        }
         teachers.remove(teacher);
     }
 
     public void deleteAllTeachers() {
+        for (String teacher : studentTeacherPairs.keySet()) {
+            List<String> pairlist = studentTeacherPairs.get(teacher);
+            for (String st : pairlist) {
+                if (students.containsKey(st))
+                    students.remove(st);
+            }
+        }
         teachers.clear();
         studentTeacherPairs.clear();
     }
